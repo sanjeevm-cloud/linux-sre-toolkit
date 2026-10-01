@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.image }})
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.image }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:24.04
+            install: apt-get update -qq && apt-get install -y -qq procps sysstat iproute2 util-linux shellcheck
+          - image: debian:12
+            install: apt-get update -qq && apt-get install -y -qq procps sysstat iproute2 util-linux
+          - image: oraclelinux:9
+            install: dnf install -y -q procps-ng sysstat iproute util-linux findutils
+          - image: amazonlinux:2023
+            install: dnf install -y -q procps-ng sysstat iproute util-linux findutils tar gzip
+    steps:
+      - name: install tools
+        run: ${{ matrix.install }}
+      - uses: actions/checkout@v4
+      - name: run tests
+        run: bash system-triage/tests/run_tests.sh
