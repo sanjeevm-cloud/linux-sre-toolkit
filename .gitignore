@@ -1,0 +1,4 @@
+# triage reports and local scratch
+*.log
+/reports/
+.DS_Store
